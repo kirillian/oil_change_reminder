@@ -73,4 +73,14 @@ Also created new bucket, edited permissions > CORS config
 did some troubleshooting bc open server processes causing IO error
 Set deveopment.rb `config.active_job.queue_adapter = :async`
 Set in .env `WEB_CONCURRENCY=2`
-### 
+### Mailer
+rails generate mailer NotificationMailer
+setup previews in spec/mailers/previews/notification_mailer_preview.rb
+added the following to config/environments/development.rb
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.default_url_options = { host: "oilchange.com" }
+setup smtp domain on sendgrid.com
+created config/initializers/smtp.rb
+added sendgrid pw and username with `EDITOR='code --wait' rails credentials:edit`
+added verified gmail as "from" in app/mailers/application_mailer.rb
+

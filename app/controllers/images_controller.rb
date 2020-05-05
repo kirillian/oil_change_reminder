@@ -1,33 +1,6 @@
 class ImagesController < ApplicationController
   before_action :set_image, only: [:show, :edit, :update, :destroy]
 
-  #api call
-  def call
-    url = "https://vision.googleapis.com/v1/images:annotate?key=" + Rails.application.credentials.google_api_key
-    body = { 
-      requests: [
-        {
-          image: {
-            source: {
-              imageUri: @image.picture.service_url
-            }
-          },
-          features: [
-            {
-              type: "TEXT_DETECTION"
-            }
-          ]
-        }
-      ]
-    }
-    #
-    HTTParty.post(url, headers: {"Content-Type" => "application/json; charset=UTF-8"}, body: body.to_json)
-  end
-#extract odometer reading
-  def extract 
-
-  end
-
   # GET /images
   def index
     @images = Image.all
@@ -49,14 +22,16 @@ class ImagesController < ApplicationController
   # POST /images
   def create
     @image = Image.new(image_params)
-    response = call
-    
-    @image.odometer_reading = response.parsed_response
+    ProcessImage.new(@image).process
+    NotificationMailer.with(image: @image).first_notification.deliver_now
     if @image.save
       redirect_to @image, notice: 'Image was successfully created.'
     else
       render :new
     end
+  # the following allows us to pull up more detail on an error if it occurs.  
+  # rescue => error
+  # binding.pry
   end
 
   # PATCH/PUT /images/1
